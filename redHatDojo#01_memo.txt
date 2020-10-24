@@ -1,0 +1,164 @@
+@Mac
+  ・VPNツールインストール
+  ・RDPで接続
+
+@コントロールRHEL
+  ・Python3 インストール
+    # yum install python3
+
+  ・Python関連パッケージのインストール
+    https://densan-hoshigumi.com/server/ansible/install-rhel8-centos8
+    # dnf -y install python3-pip epel-release
+    # dnf -y install sshpass
+
+  ・Ansible用のOSユーザ作成
+    # useradd ansible
+    # passwd ansible
+    ユーザー ansible のパスワードを変更。
+    新しいパスワード:                    ←ansibleユーザのパスワードを入力 "ansible"
+    新しいパスワードを再入力してください:    ←同様のパスワードを入力 "ansible"
+    passwd: すべての認証トークンが正しく更新できました。
+
+  ・Ansibleインストール
+    # su - ansible
+    $ pwd
+    /home/ansible
+
+    $ pip3 install ansible --user
+    (略)
+    Successfully installed MarkupSafe-1.1.1 PyYAML-5.2 ansible-2.9.1 jinja2-2.10.3
+
+    $ ansible --version
+    ansible 2.10.2
+    (略)
+
+  ・SSH公開鍵認証の設定
+    $ ssh-keygen -t rsa
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/ansible/.ssh/id_rsa):     ← Enterキーを入力
+    Created directory '/home/ansible/.ssh'.
+    Enter passphrase (empty for no passphrase):   　                      ← Enterキーを入力
+    Enter same passphrase again:                                          ← Enterキーを入力
+    Your identification has been saved in /home/ansible/.ssh/id_rsa.
+    Your public key has been saved in /home/ansible/.ssh/id_rsa.pub.
+    The key fingerprint is:
+    SHA256:nu0Ye71Qt6JvgTOlw0XJaNnoXD6DATnUtMQxxxxxxxx ansible@ansible
+    The key's randomart image is:
+    +---[RSA 2048]----+
+    |       .o*oB =o  |
+    |        o.X.@    |
+    |         =.O +   |
+    |          + x E  |
+    |        S. =.*.  |
+    |       . oB... . |
+    |        + x=...  |
+    |         =.oo.   |
+    |        o.ooo.   |
+    +----[SHA256]-----+
+
+
+@ターゲットRHEL
+  ・root で ssh接続
+  ssh root@****
+
+  ・Ansible用のOSユーザ作成
+    # useradd ansible
+    # passwd ansible
+    ユーザー ansible のパスワードを変更。
+    新しいパスワード:                    ←ansibleユーザのパスワードを入力 "ansible"
+    新しいパスワードを再入力してください:    ←同様のパスワードを入力 "ansible"
+    passwd: すべての認証トークンが正しく更新できました。
+
+
+@コントロールRHEL
+    鍵の登録(localhost)
+    $ ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa.pub localhost
+    /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ansible/.ssh/id_rsa.pub"
+    /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+    /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+    ansible@localhost's password: 
+
+    Number of key(s) added: 1
+
+    Now try logging into the machine, with:   "ssh -o 'StrictHostKeyChecking=no' 'localhost'"
+    and check to make sure that only the key(s) you wanted were added.
+
+    鍵の登録(RHELターゲット)
+    $ ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa.pub 10.132.141.72
+    /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ansible/.ssh/id_rsa.pub"
+    /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+    /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+
+  ・Ansiblerコマンド動作確認(control;localhost)
+    $ mkdir sample
+    $ cd sample
+    $ vi invent.ini
+      [control]
+      localhost
+    $ ansible -i invent.ini control -m ping
+        localhost | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/libexec/platform-python"
+        },
+        "changed": false,
+        "ping": "pong"
+        }
+    
+  ・Ansiblerコマンド動作確認(target RHEL;10.132.141.72)
+    $ vi invent.ini
+      [rhelTarget]
+      10.132.141.72
+    $ ansible -i invent.ini control -m ping
+        10.132.141.72 | SUCCESS => {
+            "ansible_facts": {
+                "discovered_interpreter_python": "/usr/libexec/platform-python"
+            },
+            "changed": false,
+            "ping": "pong"
+        }
+
+  ・Ansiblerコマンド動作確認(target Win;10.132.141.79)
+    $ vi invent.ini
+      [rhelTarget]
+      10.132.141.79
+    $ ansible -i invent.ini rhelTarget -m ping
+        10.133.111.21 | SUCCESS => {
+            "ansible_facts": {
+                "discovered_interpreter_python": "/usr/libexec/platform-python"
+            },
+            "changed": false,
+            "ping": "pong"
+        }
+
+
+@ターゲットWin
+  ・WinRM設定
+   〉mkdir c:\tmp
+   〉cd c:\tmp
+   〉Invoke-WebRequest -Uri https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -OutFile ConfigureRemotingForAnsible.ps1
+   〉powershell -ExecutionPolicy RemoteSigned .\ConfigureRemotingForAnsible.ps1
+
+  ・ユーザー追加
+   〉Administratorグループに所属するAnsibleユーザーを作成
+
+@コントロールノードRHEL
+  ・コントロールノード WinRM 対応
+  $ pip3 install pywinrm
+
+  ・Ansibleコマンド動作確認
+  $ vi invite.ini
+        [control]
+        localhost
+
+        [rhelTarget]
+        10.133.111.21
+
+        [winTarget]
+        10.133.111.42
+
+  $ ansible -i invent.ini winTarget -m win_ping
+    10.133.111.42 | SUCCESS => {
+        "changed": false,
+        "ping": "pong"
+    }
+
