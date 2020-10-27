@@ -83,13 +83,13 @@
     Now try logging into the machine, with:   "ssh -o 'StrictHostKeyChecking=no' 'localhost'"
     and check to make sure that only the key(s) you wanted were added.
 
-    鍵の登録(RHELターゲット)
-    $ ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa.pub 10.132.141.72
+    鍵の登録(RHELターゲット)  IPアドレス（AA.BB.CC.DD）は適宜変更
+    $ ssh-copy-id -o StrictHostKeyChecking=no -i $HOME/.ssh/id_rsa.pub AA.BB.CC.DD
     /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ansible/.ssh/id_rsa.pub"
     /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
     /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
 
-  ・Ansiblerコマンド動作確認(control;localhost)
+  ・Ansibleコマンド動作確認(control;localhost)
     $ mkdir sample
     $ cd sample
     $ vi invent.ini
@@ -104,12 +104,12 @@
         "ping": "pong"
         }
     
-  ・Ansiblerコマンド動作確認(target RHEL;10.132.141.72)
+  ・Ansibleコマンド動作確認(target RHEL;AA.BB.CC.DD) IPアドレス（AA.BB.CC.DD）は適宜変更
     $ vi invent.ini
       [rhelTarget]
-      10.132.141.72
+      AA.BB.CC.DD
     $ ansible -i invent.ini control -m ping
-        10.132.141.72 | SUCCESS => {
+        AA.BB.CC.DD | SUCCESS => {
             "ansible_facts": {
                 "discovered_interpreter_python": "/usr/libexec/platform-python"
             },
@@ -117,12 +117,12 @@
             "ping": "pong"
         }
 
-  ・Ansiblerコマンド動作確認(target Win;10.132.141.79)
+  ・Ansiblerコマンド動作確認(target Win;WW.XX.YY.ZZ) IPアドレス（WW.XX.YY.ZZ）は適宜変更
     $ vi invent.ini
       [rhelTarget]
-      10.132.141.79
+      WW.XX.YY.ZZ
     $ ansible -i invent.ini rhelTarget -m ping
-        10.133.111.21 | SUCCESS => {
+        WW.XX.YY.ZZ | SUCCESS => {
             "ansible_facts": {
                 "discovered_interpreter_python": "/usr/libexec/platform-python"
             },
@@ -151,13 +151,13 @@
         localhost
 
         [rhelTarget]
-        10.133.111.21
+        AA.BB.CC.DD
 
         [winTarget]
-        10.133.111.42
+        WW.XX.YY.ZZ
 
   $ ansible -i invent.ini winTarget -m win_ping
-    10.133.111.42 | SUCCESS => {
+    WW.XX.YY.ZZ | SUCCESS => {
         "changed": false,
         "ping": "pong"
     }
