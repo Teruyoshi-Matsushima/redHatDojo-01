@@ -1,5 +1,5 @@
 ---
-- hosts: rhelTarget
+- hosts: 10.193.165.213
   remote_user: ansible
   become: yes
 
