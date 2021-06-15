@@ -1,5 +1,5 @@
 ---
-- hosts: rheltarget
+- hosts: rhelTarget
   remote_user: ansible
   become: yes
 
