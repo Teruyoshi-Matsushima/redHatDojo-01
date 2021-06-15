@@ -1,5 +1,6 @@
 ---
-- hosts: rhelTarget
+- name: apache task
+  hosts: all
   remote_user: ansible
   become: yes
 
